@@ -39,6 +39,15 @@ Alle Beispiele sind als einzelne HTML-Dateien umgesetzt (CSS + JS inline, kein B
 
 Das Design orientiert sich am Erscheinungsbild von [Statistik Stadt Zürich](https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten.html) mit Farben aus [zuericolors](https://github.com/StatistikStadtZuerich/zuericolors) und UI-Styling nach [zuericssstyle](https://github.com/StatistikStadtZuerich/zuericssstyle). Für die Frontend-Entwicklung wird das Claude Code `/frontend-design` Skill eingesetzt.
 
+### UI-Features (alle Seiten)
+
+- **Header**: Gradient (Züriblau → Dark-Blue) mit radialem Lichtakzent, Fade-Up-Animation
+- **Sticky-Navigation**: Frosted-Glass-Effekt (Backdrop-Blur), Scroll-Spy mit aktiver Kapitel-Hervorhebung
+- **Cards & KPIs**: Hover-Lift mit blauem Schatten, KPI-Kacheln mit Züriblau-Top-Border
+- **Scroll-Reveal**: Gestaffelte Einblendanimationen beim Scrollen (IntersectionObserver)
+- **Filter-Buttons**: Hover-Hintergrund, aktiver Glow-Schatten
+- **Tabellen**: Hellblaue Hover-Zeilen (#eff5ff)
+
 ## Daten aktualisieren
 
 Das Hunde-Beispiel verfügt über ein Python-Script zur automatischen Datenaktualisierung:
