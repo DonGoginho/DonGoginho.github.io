@@ -37,7 +37,7 @@ dongoginho.github.io/
 
 Alle Beispiele sind als einzelne HTML-Dateien umgesetzt (CSS + JS inline, kein Build-Tool). Diagramme werden mit [Chart.js 4](https://www.chartjs.org/) gerendert, Karten mit [Leaflet](https://leafletjs.com/). Die Daten werden live via CKAN Datastore API bzw. WFS von [data.stadt-zuerich.ch](https://data.stadt-zuerich.ch) geladen.
 
-Das Design orientiert sich am Erscheinungsbild von [Statistik Stadt Zürich](https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten.html) mit Farben aus [zuericolors](https://github.com/StatistikStadtZuerich/zuericolors) und UI-Styling nach [zuericssstyle](https://github.com/StatistikStadtZuerich/zuericssstyle).
+Das Design orientiert sich am Erscheinungsbild von [Statistik Stadt Zürich](https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten.html) mit Farben aus [zuericolors](https://github.com/StatistikStadtZuerich/zuericolors) und UI-Styling nach [zuericssstyle](https://github.com/StatistikStadtZuerich/zuericssstyle). Für die Frontend-Entwicklung wird das Claude Code `/frontend-design` Skill eingesetzt.
 
 ## Daten aktualisieren
 

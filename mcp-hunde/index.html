@@ -10,6 +10,27 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .site-nav {
       background: #070250;
       padding: 0.5rem 1.5rem;
@@ -22,6 +43,7 @@
       text-decoration: none;
       font-size: 0.875rem;
       font-family: 'Inter', sans-serif;
+      transition: color 0.2s;
     }
     .site-nav a:hover { color: #fff; }
     .site-nav a.active { color: #fff; font-weight: 500; }
@@ -34,17 +56,29 @@
     }
 
     header {
-      background: #0F05A0;
+      background: linear-gradient(135deg, #0F05A0 0%, #070250 100%);
       color: white;
-      padding: 2.5rem 2rem;
+      padding: 3rem 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 20%, rgba(136,207,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
     }
 
     .header-text {
       text-align: center;
+      position: relative;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     header h1 {
@@ -52,11 +86,13 @@
       font-weight: 900;
       line-height: 1.3;
       margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
     }
 
     header p {
       font-size: 1.05rem;
-      opacity: 0.85;
+      opacity: 0.8;
+      font-weight: 400;
     }
 
     .header-logo a {
@@ -69,6 +105,7 @@
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
       transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
       cursor: pointer;
+      animation: fadeIn 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .header-logo img:hover {
@@ -88,6 +125,12 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       padding: 2rem;
       margin-bottom: 2rem;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .chart-card:hover {
+      box-shadow: 0 4px 20px rgba(15,5,160,0.08);
+      transform: translateY(-2px);
     }
 
     .chart-card h2 {
@@ -121,6 +164,13 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       padding: 1.25rem 1.5rem;
       text-align: center;
+      border-top: 3px solid #0F05A0;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .kpi:hover {
+      box-shadow: 0 4px 20px rgba(15,5,160,0.1);
+      transform: translateY(-2px);
     }
 
     .kpi .value {
@@ -137,22 +187,24 @@
 
     footer {
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1rem;
       font-size: 0.8rem;
       color: #646464;
       border-top: 1px solid #dedede;
+      background: white;
     }
 
-    footer a { color: #0F05A0; text-decoration: underline; }
+    footer a { color: #0F05A0; text-decoration: underline; transition: color 0.2s; }
     footer a:hover { color: #0353DC; }
 
     .chapter-nav {
-      background: white;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid #e0e0e0;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
     .chapter-nav ul {
@@ -172,7 +224,7 @@
       font-size: 0.9rem;
       font-weight: 500;
       border-bottom: 3px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .chapter-nav li a:hover {
@@ -183,6 +235,7 @@
     .chapter-nav li a.active {
       color: #0F05A0;
       border-bottom-color: #0F05A0;
+      font-weight: 700;
     }
 
     .section-title {
@@ -226,7 +279,8 @@
       border-bottom: 1px solid #f0f0f0;
     }
 
-    .table-card tr:hover td { background: #f4f4f4; }
+    .table-card tr { transition: background 0.15s; }
+    .table-card tr:hover td { background: #eff5ff; }
 
     .rasse-name a { color: #0F05A0; text-decoration: underline; }
     .rasse-name a:hover { color: #0353DC; }
@@ -568,7 +622,7 @@
   <div class="tt-label">Bild: Wikipedia</div>
 </div>
 
-<div style="text-align: center; padding: 1.5rem 1rem;"><a href="#top" style="color: #0F05A0; text-decoration: underline; font-size: 0.875rem;">↑ Nach oben</a></div>
+<div style="text-align: center; padding: 2rem 1rem;"><a href="#top" style="color: #0F05A0; text-decoration: none; font-size: 0.875rem; font-weight: 500; padding: 0.5rem 1.25rem; border: 1px solid #dedede; border-radius: 6px; transition: all 0.2s; display: inline-block;" onmouseover="this.style.borderColor='#0F05A0';this.style.background='#eff5ff'" onmouseout="this.style.borderColor='#dedede';this.style.background='transparent'">↑ Nach oben</a></div>
 
 <footer>
   Datenquellen:
@@ -1288,6 +1342,24 @@ document.addEventListener('touchend', e => {
 
 renderRassen();
 ladeRassenBilder();
+
+// --- Scroll-Reveal ---
+(function() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.chart-card, .kpi, .section-title').forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.transitionDelay = `${i * 0.06}s`;
+    observer.observe(el);
+  });
+})();
 
 const namenW = [
   { name: 'Luna',   a25: 122, a24: 118 },
