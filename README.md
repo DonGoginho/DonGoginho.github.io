@@ -1,10 +1,12 @@
-# MCP-Server Beispiele – Open Data Stadt Zürich
+# Open Data Stadt Zürich – Interaktive Auswertungen
 
-Interaktive Auswertungen auf Basis von Open Government Data der Stadt Zürich, erstellt mit [Claude](https://claude.ai) und dem [OGD-MCP-Server](https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html).
+Interaktive Auswertungen auf Basis von Open Government Data der Stadt Zürich. Alle Daten stammen von [data.stadt-zuerich.ch](https://data.stadt-zuerich.ch) (CC0-Lizenz).
 
 **[dongoginho.github.io](https://dongoginho.github.io/)**
 
-## Beispiele
+## MCP-Server Beispiele
+
+Erstellt mit [Claude](https://claude.ai) und dem [OGD-MCP-Server](https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html). Der MCP-Server stellt Tools bereit, mit denen Claude direkt SQL-Abfragen auf die offenen Datensätze der Stadt Zürich ausführen kann.
 
 | Beispiel | Beschreibung | Datenquelle |
 |---|---|---|
@@ -49,11 +51,3 @@ python update_data.py              # Aktualisieren
 ```
 
 Details siehe [mcp-hunde/README.md](mcp-hunde/README.md).
-
-## Entstehung
-
-Diese Beispiele zeigen, wie mit einem MCP-Server und Claude interaktive Datenauswertungen erstellt werden können. Der MCP-Server stellt Tools bereit, mit denen Claude direkt SQL-Abfragen auf die offenen Datensätze der Stadt Zürich ausführen kann.
-
-## Lizenz
-
-Alle Daten stammen von [data.stadt-zuerich.ch](https://data.stadt-zuerich.ch) und stehen unter CC0-Lizenz.
