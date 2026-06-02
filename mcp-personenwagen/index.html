@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personenwagenbestand Stadt Zürich</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', Helvetica, Arial, sans-serif;
+      background: #f4f4f4;
+      color: #000;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #0F05A0;
+      color: white;
+      padding: 2.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .header-text {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.05rem;
+      opacity: 0.85;
+    }
+
+    .header-logo a {
+      display: block;
+    }
+
+    .header-logo img {
+      height: 100px;
+      width: auto;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
+      cursor: pointer;
+    }
+
+    .header-logo img:hover {
+      transform: rotateY(360deg) scale(1.08);
+      filter: drop-shadow(0 4px 16px rgba(255,215,54,0.5));
+    }
+
+    main {
+      max-width: 888px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card h2 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      line-height: 1.5;
+      color: #0F05A0;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-card .subtitle {
+      font-size: 0.9rem;
+      color: #646464;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      max-height: 480px;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+
+    .kpi .value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0F05A0;
+    }
+
+    .kpi .label {
+      font-size: 0.85rem;
+      color: #646464;
+      margin-top: 0.25rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.85rem;
+      color: #646464;
+      border-top: 1px solid #dedede;
+    }
+
+    footer a { color: #0F05A0; text-decoration: underline; }
+    footer a:hover { color: #0353DC; }
+
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .table-card th {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid #7c7c7c;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .table-card th:hover { color: #0353DC; }
+    .table-card th .sort-arrow { font-size: 0.7rem; margin-left: 0.3rem; opacity: 0.4; }
+    .table-card th.sorted .sort-arrow { opacity: 1; color: #0F05A0; }
+
+    .table-card td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    .table-card tr:hover td { background: #f4f4f4; }
+
+    .table-card td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .badge.pos { background: #e8f5e9; color: #2e7d32; }
+    .badge.neg { background: #fce4ec; color: #c62828; }
+    .badge.zero { background: #f5f5f5; color: #666; }
+
+    .table-filter {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+
+    .table-filter input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .table-filter input:focus { border-color: #0F05A0; }
+
+    .chart-source {
+      font-size: 0.78rem;
+      color: #646464;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+
+    .chart-source a { color: #0F05A0; text-decoration: underline; }
+    .chart-source a:hover { color: #0353DC; }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-btn {
+      padding: 0.35rem 0.9rem;
+      border: 1px solid #7c7c7c;
+      border-radius: 4px;
+      background: white;
+      color: #000;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .filter-btn:hover { border-color: #0F05A0; color: #0F05A0; }
+    .filter-btn.active { background: #0F05A0; color: white; border-color: #0F05A0; }
+
+    nav {
+      background: white;
+      border-bottom: 1px solid #dedede;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav ul {
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      list-style: none;
+      max-width: 888px;
+      margin: 0 auto;
+      padding: 0.6rem 1.5rem;
+    }
+
+    nav a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      color: #000;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    nav a:hover { background: #eff5ff; color: #0F05A0; }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      line-height: 1.3;
+      color: #0F05A0;
+      margin: 20px 0 4px;
+      padding-top: 1rem;
+    }
+
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .tables-grid .chart-card { margin-bottom: 0; }
+
+    @media (max-width: 700px) {
+      .tables-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 1.5rem 1rem; gap: 1rem; }
+      header h1 { font-size: 1.35rem; }
+      header p { font-size: 0.85rem; }
+      .header-logo img { height: 70px; }
+    }
+
+    @media (max-width: 380px) {
+      header { flex-direction: column; gap: 0.75rem; }
+      header h1 { font-size: 1.15rem; }
+      .header-logo img { height: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <h1>Personenwagen der Stadt Zürich</h1>
+    <p>Interaktive Auswertung auf Basis der Open-Data-Daten von Statistik Stadt Zürich</p>
+  </div>
+  <div class="header-logo">
+    <a href="https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html" target="_blank" rel="noopener">
+      <img src="../assets/2026_logo_mcp_server_alex.png" alt="MCP-Server Logo">
+    </a>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#bestand">Bestand</a></li>
+    <li><a href="#treibstoff">Treibstoffart</a></li>
+    <li><a href="#marken">Marken</a></li>
+  </ul>
+</nav>
+
+<main>
+  <h2 class="section-title" id="bestand">Personenwagen-Bestand</h2>
+
+  <div class="chart-card">
+    <h2>Personenwagen natürlicher Personen und Bevölkerung ab 18 Jahren</h2>
+    <p class="subtitle">Personenwagen im Besitz natürlicher Personen vs. Wohnbevölkerung ab 18 Jahren, 2002 – 2025</p>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="total" onclick="updateDualChart('total')">Total</button>
+      <button class="filter-btn" data-filter="Kreis 1" onclick="updateDualChart('Kreis 1')">Kreis 1</button>
+      <button class="filter-btn" data-filter="Kreis 2" onclick="updateDualChart('Kreis 2')">Kreis 2</button>
+      <button class="filter-btn" data-filter="Kreis 3" onclick="updateDualChart('Kreis 3')">Kreis 3</button>
+      <button class="filter-btn" data-filter="Kreis 4" onclick="updateDualChart('Kreis 4')">Kreis 4</button>
+      <button class="filter-btn" data-filter="Kreis 5" onclick="updateDualChart('Kreis 5')">Kreis 5</button>
+      <button class="filter-btn" data-filter="Kreis 6" onclick="updateDualChart('Kreis 6')">Kreis 6</button>
+      <button class="filter-btn" data-filter="Kreis 7" onclick="updateDualChart('Kreis 7')">Kreis 7</button>
+      <button class="filter-btn" data-filter="Kreis 8" onclick="updateDualChart('Kreis 8')">Kreis 8</button>
+      <button class="filter-btn" data-filter="Kreis 9" onclick="updateDualChart('Kreis 9')">Kreis 9</button>
+      <button class="filter-btn" data-filter="Kreis 10" onclick="updateDualChart('Kreis 10')">Kreis 10</button>
+      <button class="filter-btn" data-filter="Kreis 11" onclick="updateDualChart('Kreis 11')">Kreis 11</button>
+      <button class="filter-btn" data-filter="Kreis 12" onclick="updateDualChart('Kreis 12')">Kreis 12</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chartDualAxis"></canvas>
+    </div>
+    <p class="chart-source">
+      Quellen: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_jahr_quartier_antriebsart_rechtsform_od2001" target="_blank" rel="noopener">Bestand der Personenwagen nach Treibstoffart, Rechtsform und Stadtquartier (OD2001)</a>,
+      <a href="https://data.stadt-zuerich.ch/dataset/bev_bestand_jahr_quartier_alter_herkunft_geschlecht_od3903" target="_blank" rel="noopener">Bevölkerung nach Alter, Herkunft und Geschlecht (OD3903)</a>
+      – Statistik Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <div class="chart-card">
+    <h2>Motorisierungsgrad nach Stadtkreis</h2>
+    <p class="subtitle">Personenwagen pro 1'000 Einwohner, alle Stadtkreise im Vergleich, 2003 – 2025</p>
+    <div class="chart-wrap">
+      <canvas id="chartMotKreise"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_motorisierungsgrad_jahr_quartier_od2005" target="_blank" rel="noopener">Motorisierungsgrad nach Stadtquartier (OD2005)</a>
+      – Statistik Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <h2 class="section-title" id="treibstoff">Personenwagen nach Treibstoffart</h2>
+
+  <div class="chart-card">
+    <h2>Personenwagenbestand nach Treibstoffart</h2>
+    <p class="subtitle">Anzahl Personenwagen per 30. September, 2002 – 2025</p>
+    <div class="chart-wrap">
+      <canvas id="chartTreibstoff"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_jahr_quartier_antriebsart_rechtsform_od2001" target="_blank" rel="noopener">Bestand der Personenwagen nach Treibstoffart, Rechtsform und Stadtquartier (OD2001)</a>
+      – Statistik Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <div class="chart-card">
+    <h2>Neuzulassungen nach Treibstoffart</h2>
+    <p class="subtitle">Neu zugelassene Personenwagen nach Treibstoffart, 2002 – 2025</p>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="total" onclick="updateNeuChart('total')">Total</button>
+      <button class="filter-btn" data-filter="nat" onclick="updateNeuChart('nat')">Natürliche Personen</button>
+      <button class="filter-btn" data-filter="jur" onclick="updateNeuChart('jur')">Juristische Personen</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chartNeuzulassungen"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_neuzulassungen_jahr_quartier_antriebsart_rechtsform_od2004" target="_blank" rel="noopener">Neuzulassungen der Personenwagen nach Treibstoffart, Rechtsform und Stadtquartier (OD2004)</a>
+      – Statistik Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <h2 class="section-title" id="marken">Personenwagen nach Marke</h2>
+
+  <div class="chart-card">
+    <h2>Top-10-Marken im Bestand</h2>
+    <p class="subtitle">Die zehn häufigsten Automarken und übrige, 2002 – 2025</p>
+    <div class="chart-wrap">
+      <canvas id="chartMarken10"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_marke_quartier_od2003" target="_blank" rel="noopener">Bestand der Personenwagen nach Marke und Stadtquartier (OD2003)</a>
+      – Statistik Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <div class="chart-card">
+    <h2>Rein elektrische Marken im Bestand</h2>
+    <p class="subtitle">Bestandsentwicklung der Top-5-Elektromarken (basierend auf Markenzuordnung), 2002 – 2025</p>
+    <div class="chart-wrap">
+      <canvas id="chartElektroMarken"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_marke_quartier_od2003" target="_blank" rel="noopener">OD2003</a>
+      – Statistik Stadt Zürich, CC0. Zuordnung «rein elektrisch» basiert auf Markenklassifikation, nicht auf OGD-Treibstoffdaten.
+    </p>
+  </div>
+
+  <div class="tables-grid">
+    <div class="chart-card table-card">
+      <h2 style="color:#c62828;">&#x25BC; Abnehmender Bestand seit 2002</h2>
+      <p class="subtitle">Marken mit der grössten Abnahme, 2002 vs. 2025</p>
+      <table id="tableVerlierer">
+        <thead>
+          <tr>
+            <th data-col="marke" onclick="sortTable('tableVerlierer','marke')">Marke <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="v2002" onclick="sortTable('tableVerlierer','v2002')">2002 <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="v2025" onclick="sortTable('tableVerlierer','v2025')">2025 <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="diff" class="sorted" onclick="sortTable('tableVerlierer','diff')">+/− <span class="sort-arrow">&#x25B4;</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="chart-source">
+        Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_marke_quartier_od2003" target="_blank" rel="noopener">OD2003</a> – Statistik Stadt Zürich, CC0
+      </p>
+    </div>
+    <div class="chart-card table-card">
+      <h2 style="color:#2e7d32;">&#x25B2; Zunehmender Bestand seit 2002</h2>
+      <p class="subtitle">Marken mit der grössten Zunahme, 2002 vs. 2025</p>
+      <table id="tableGewinner">
+        <thead>
+          <tr>
+            <th data-col="marke" onclick="sortTable('tableGewinner','marke')">Marke <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="v2002" onclick="sortTable('tableGewinner','v2002')">2002 <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="v2025" onclick="sortTable('tableGewinner','v2025')">2025 <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+            <th data-col="diff" class="sorted" onclick="sortTable('tableGewinner','diff')">+/− <span class="sort-arrow">&#x25B4;</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="chart-source">
+        Quelle: <a href="https://data.stadt-zuerich.ch/dataset/prd_ssz_fz_pw_bestand_marke_quartier_od2003" target="_blank" rel="noopener">OD2003</a> – Statistik Stadt Zürich, CC0
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Alle Daten: <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">Open Government Data der Stadt Zürich</a>
+  – Statistik Stadt Zürich, Präsidialdepartement &middot; Lizenz: CC0
+</footer>
+
+<script>
+const jahre = [2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+
+const treibstoffDaten = {
+  'Benzin':     [125375,122905,121654,119199,116490,113978,111717,109114,106636,104178,101274,97985,94929,92874,90833,88963,87961,85655,85053,83071,80093,77778,75121,72105],
+  'Diesel':     [6876,8499,10188,12155,14624,17215,20051,22484,24607,27209,30571,33870,36429,39152,41277,42798,43009,42308,42156,41041,39041,36943,35027,32716],
+  'Hybrid':     [13,17,36,88,188,365,536,707,857,1041,1306,1603,1916,2248,2625,3011,3407,4262,5524,8145,10679,13082,15524,18616],
+  'Elektrisch': [5,5,6,5,5,3,2,2,87,70,115,155,265,400,565,746,887,1467,2023,2979,4373,5991,7571,9743],
+  'Übrige':     [29,45,61,78,132,241,325,393,436,463,452,483,516,588,620,649,674,673,675,677,648,596,577,554],
+  'Unbekannt':  [3376,3060,2792,2560,2382,2168,1819,1489,1253,1034,845,731,621,542,471,425,382,350,332,284,273,249,241,209],
+};
+
+// zuericolors qual6
+const qual6 = ['#3431DE','#DB247D','#1F9E31','#FBB900','#23C3F1','#FF720C'];
+
+const treibstoffFarben = {
+  'Benzin':     qual6[0],
+  'Diesel':     qual6[1],
+  'Hybrid':     qual6[2],
+  'Elektrisch': qual6[3],
+  'Übrige':     qual6[4],
+  'Unbekannt':  qual6[5],
+};
+
+new Chart(document.getElementById('chartTreibstoff').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: jahre,
+    datasets: Object.entries(treibstoffDaten).map(([name, data]) => ({
+      label: name,
+      data: data,
+      backgroundColor: treibstoffFarben[name],
+      borderColor: '#ffffff',
+      borderWidth: 0.7,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 16, font: { size: 12 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('de-CH')}`,
+          footer: items => {
+            const total = items.reduce((s, i) => s + i.parsed.y, 0);
+            return `Total: ${total.toLocaleString('de-CH')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+});
+
+// --- Dual-Axis: PW natürliche Personen vs. Bevölkerung 18+ ---
+
+const dualDaten = {
+  total: {
+    nat: [108374,107846,107849,107407,106858,106551,106347,105687,104970,104697,105042,105121,105024,106017,106673,106939,106823,105679,106707,107120,105566,104574,104463,104334],
+    jur: [27300,26685,26888,26678,26963,27419,28103,28502,28906,29298,29521,29706,29652,29787,29718,29653,29497,29036,29056,29077,29541,30065,29598,29609],
+    bev: [313131,312961,313316,314932,318002,323867,327029,328758,330682,334305,337174,340639,345379,349431,353081,358648,362654,366593,366501,367406,373275,376896,378575,382285],
+  },
+  'Kreis 1': {
+    nat: [1302,1293,1255,1240,1218,1218,1189,1128,1114,1083,1087,1058,1057,1060,1069,1027,1007,982,1020,1024,982,982,934,915],
+    jur: [2939,2861,2817,2807,2426,2514,2551,2602,2556,2586,2642,2677,2691,2651,2605,2605,2583,2549,2564,2689,2896,2994,3085,2996],
+    bev: [5243,5230,5172,5134,5172,5175,5107,5130,5129,5101,5128,5130,5173,5173,5200,5242,5274,5297,5346,5330,5378,5408,5293,5294],
+  },
+  'Kreis 2': {
+    nat: [9847,9784,9761,9736,9614,9588,9582,9432,9315,9172,9134,9083,9073,9220,9266,9315,9450,9377,9562,9761,9784,9698,9797,9834],
+    jur: [2040,2034,1991,2008,2006,2017,1995,2073,2207,2315,2448,2439,2405,2400,2358,2363,2439,2494,2462,2412,2418,2451,2312,2405],
+    bev: [24459,24278,24260,24543,24643,25002,25070,25262,25290,25412,25396,25664,26215,26409,26775,27723,28638,28651,29030,29284,29988,30576,31045,31145],
+  },
+  'Kreis 3': {
+    nat: [11286,11117,11116,11060,10900,10784,10681,10658,10495,10464,10604,10714,10688,10734,10721,10672,10513,10511,10552,10374,10131,9916,9814,9782],
+    jur: [2263,2221,2338,2334,2391,2429,2503,2579,2650,2760,2817,2868,2924,2948,2924,2949,2835,2860,2880,2881,2875,2884,2698,2683],
+    bev: [38638,38451,38404,38764,38818,39093,39487,39810,39542,39774,40520,40745,41022,41275,41426,41845,42345,42703,42357,41843,42326,42665,43199,43508],
+  },
+  'Kreis 4': {
+    nat: [5858,5815,5696,5618,5478,5360,5300,5268,5225,5193,5246,5351,5265,5256,5168,5089,4996,4877,4932,5065,4928,4923,4802,4726],
+    jur: [2359,2310,2346,2348,2369,2492,2548,2467,2551,2546,2729,2731,2796,2816,2775,2761,2718,2799,2853,2677,2672,2656,2374,2416],
+    bev: [23870,23647,23738,23914,23755,24137,24373,24427,24495,24556,24870,25166,25624,25704,25693,25883,25845,26499,26203,26134,26729,26915,26607,26545],
+  },
+  'Kreis 5': {
+    nat: [2639,2630,2620,2611,2622,2617,2525,2509,2464,2422,2477,2565,2695,2917,3013,3099,3088,3013,3011,2981,2904,2857,2853,2780],
+    jur: [1902,1850,1920,1973,1994,1981,2070,2095,2148,2165,2219,2211,2196,2137,2084,2073,2009,1874,1821,1964,2028,2073,2102,2172],
+    bev: [11073,10907,11050,11079,11369,11363,11388,11402,11350,11498,11691,12119,12569,13419,13725,13893,13799,13962,13802,13928,14010,14020,13881,14045],
+  },
+  'Kreis 6': {
+    nat: [8234,8128,8176,8067,7937,7837,7889,7759,7792,7803,7769,7747,7797,7746,7790,7834,7810,7723,7831,7893,7710,7545,7507,7445],
+    jur: [1416,1425,1402,1344,1363,1385,1410,1448,1447,1496,1548,1521,1559,1563,1585,1567,1557,1572,1590,1498,1428,1443,1302,1375],
+    bev: [25961,25940,25652,25727,25942,26138,26550,26779,27022,27029,27142,27635,27941,28082,28337,28608,29123,29506,29765,29804,30240,30066,30429,30854],
+  },
+  'Kreis 7': {
+    nat: [11988,11968,12098,12118,12145,12190,12220,12131,11968,11955,12059,12015,11957,12076,12149,12190,12240,12085,12197,12183,12023,11989,11964,11903],
+    jur: [1906,1941,1886,1878,1862,1881,1914,2091,2106,2229,2302,2399,2190,2124,2117,2078,2035,2029,1999,1998,2054,2124,1936,1975],
+    bev: [29318,29246,29435,29696,29878,30115,30429,30464,30451,30505,30390,30772,31103,31458,31397,31556,32062,32328,32258,32234,32825,33128,33310,33817],
+  },
+  'Kreis 8': {
+    nat: [4641,4612,4683,4654,4600,4493,4460,4395,4371,4359,4422,4349,4345,4383,4318,4361,4404,4360,4529,4646,4552,4448,4341,4276],
+    jur: [1829,1766,1855,1766,1759,1823,1875,1848,1958,1999,2046,2051,2058,2037,2064,2061,2009,1945,1889,1908,1916,1974,1917,1927],
+    bev: [13717,13575,13657,13643,13546,13730,13613,13502,13762,13730,13640,14029,14258,14253,14213,14506,14673,14863,15180,15385,15411,15448,15463,15517],
+  },
+  'Kreis 9': {
+    nat: [14402,14218,14277,14225,14176,14189,14115,14061,14051,14288,14424,14418,14306,14478,14573,14849,14852,14797,14819,14818,14793,14647,14744,14658],
+    jur: [3419,3262,3130,3099,3150,3149,3407,3607,3919,3981,4224,4375,4423,4596,4623,4602,4608,4509,4584,4608,4739,4827,5101,5236],
+    bev: [38837,38813,38916,39031,39568,40398,40832,40963,41750,42787,43179,42968,43155,43698,44951,46489,47339,47856,47507,48065,49261,50405,50674,51436],
+  },
+  'Kreis 10': {
+    nat: [11505,11421,11396,11287,11345,11134,10969,10887,10744,10745,10720,10628,10533,10580,10745,10705,10678,10574,10660,10696,10490,10362,10267,10233],
+    jur: [1100,1039,1053,1063,1064,1089,1083,1107,1123,1153,1253,1191,1145,1180,1188,1212,1249,1201,1201,1218,1212,1227,1089,1159],
+    bev: [31431,31520,31547,31524,31678,31825,31982,32202,32122,32333,32429,32440,32415,32803,33952,34504,34344,34650,34702,34603,34988,34938,35069,35316],
+  },
+  'Kreis 11': {
+    nat: [17457,17647,17643,17652,17692,18013,18429,18349,18424,18634,19104,19278,19313,19475,19578,19541,19396,19026,19145,19343,19056,19064,19284,19644],
+    jur: [3388,3289,3401,3380,3380,3475,3611,3663,3625,4052,4351,4370,4371,4451,4480,4490,4541,4322,4340,4375,4427,4539,4746,4375],
+    bev: [47535,48366,48699,49177,50656,53473,54557,54781,55795,57603,58823,59804,60924,61222,61486,62435,62846,63252,63590,64235,65278,65925,66622,67706],
+  },
+  'Kreis 12': {
+    nat: [8645,8564,8317,8243,8152,8144,8046,8130,8058,8013,7954,7877,7960,8057,8243,8229,8359,8331,8427,8318,8195,8125,8147,8112],
+    jur: [787,754,708,699,691,689,739,757,779,722,791,843,869,865,901,878,902,872,864,838,860,863,858,802],
+    bev: [23049,22988,22786,22700,22977,23418,23641,24036,23974,23977,23966,24167,24980,25935,25926,25964,26366,27026,26761,26561,26841,27402,26983,27102],
+  },
+};
+
+function dualYMax(src) {
+  const maxBev = Math.max(...src.bev);
+  const maxPW = Math.max(...src.nat.map((v, i) => v + src.jur[i]));
+  const raw = Math.max(maxBev, maxPW);
+  if (raw > 50000) return Math.ceil(raw / 50000) * 50000;
+  if (raw > 10000) return Math.ceil(raw / 10000) * 10000;
+  return Math.ceil(raw / 5000) * 5000;
+}
+
+const dualChart = new Chart(document.getElementById('chartDualAxis').getContext('2d'), {
+  data: {
+    labels: jahre,
+    datasets: [
+      {
+        type: 'bar',
+        label: 'PW nat. Personen',
+        data: dualDaten.total.nat,
+        backgroundColor: qual6[0],
+        borderColor: '#ffffff',
+        borderWidth: 0.7,
+        yAxisID: 'yPW',
+        stack: 'pw',
+        order: 2,
+      },
+      {
+        type: 'bar',
+        label: 'PW jur. Personen',
+        data: dualDaten.total.jur,
+        backgroundColor: qual6[2],
+        borderColor: '#ffffff',
+        borderWidth: 0.7,
+        yAxisID: 'yPW',
+        stack: 'pw',
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: 'Bevölkerung ab 18 Jahren',
+        data: dualDaten.total.bev,
+        borderColor: qual6[1],
+        backgroundColor: 'transparent',
+        tension: 0.3,
+        pointRadius: 2.5,
+        pointHoverRadius: 5,
+        pointBackgroundColor: qual6[1],
+        borderWidth: 2.5,
+        yAxisID: 'yBev',
+        order: 1,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 16, font: { size: 12 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('de-CH')}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      yPW: {
+        type: 'linear',
+        position: 'left',
+        stacked: true,
+        min: 0,
+        max: dualYMax(dualDaten.total),
+        title: { display: true, text: 'Personenwagen', font: { size: 13, weight: 'bold' } },
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+      yBev: {
+        type: 'linear',
+        position: 'right',
+        min: 0,
+        max: dualYMax(dualDaten.total),
+        title: { display: true, text: 'Bevölkerung ab 18 Jahren', color: qual6[1], font: { size: 13, weight: 'bold' } },
+        ticks: {
+          font: { size: 12 },
+          color: qual6[1],
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { drawOnChartArea: false },
+      },
+    },
+  },
+});
+
+function updateDualChart(filter) {
+  const card = document.getElementById('chartDualAxis').closest('.chart-card');
+  card.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === filter);
+  });
+  const src = dualDaten[filter];
+  const yMax = dualYMax(src);
+  dualChart.data.datasets[0].data = src.nat;
+  dualChart.data.datasets[1].data = src.jur;
+  dualChart.data.datasets[2].data = src.bev;
+  dualChart.options.scales.yPW.max = yMax;
+  dualChart.options.scales.yBev.max = yMax;
+  dualChart.update();
+}
+
+// --- Grafik 3: Motorisierungsgrad alle Kreise (Quelle: OD2005) ---
+
+const motGradKreis = {
+  'Kreis 1':  [null,605.5,631.8,666.3,616.9,632.3,626,620.8,610.8,615.5,624.2,627.8,626.5,615.5,607.4,603.5,588.1,574.7,584.3,613.8,641.5,649,659.9,658.4],
+  'Kreis 2':  [null,435.1,433.1,431.9,423.2,424.7,410.6,402.8,398.8,396.1,397.5,395.4,388.5,385.2,380,376.4,367.7,353.3,354.7,352.6,348,338.6,332.6,330.7],
+  'Kreis 3':  [null,317.9,320.1,317.3,312.2,311.7,304.5,299.1,294.8,294.9,298,296.6,294.2,292.4,288.5,285.7,277,274.4,272,269.9,268.3,262.9,256.4,253.1],
+  'Kreis 4':  [null,334.7,333.3,330,324.4,328.5,317.8,305.4,304.6,301,309.8,309.9,305,300,294.2,291.2,285.3,284.7,280.5,280.3,275.1,268.2,252.5,253.9],
+  'Kreis 5':  [null,409.6,418.2,406.9,409.1,397,388.7,382.5,377.4,374.8,380.2,378.8,374.4,369,348.5,344.1,336.1,322.7,320.5,329.5,325.6,324.3,325.9,328.1],
+  'Kreis 6':  [null,354.5,355.5,351.3,347.4,344.2,335.2,322.7,317.3,314.4,313.2,309.2,308.2,303,303.3,299.8,296.2,287.6,288.2,282.2,274.1,266.4,261.5,257.2],
+  'Kreis 7':  [null,442,442.9,437.4,434.3,435.4,427.2,422.5,414.2,416.1,418.8,419.3,407.8,404.4,400.4,398.8,396.2,383.6,381.1,379.5,376.1,373.8,364.7,364.1],
+  'Kreis 8':  [null,457.8,468.4,456,453.1,458.4,444.1,434.7,439.6,433.6,440.6,436.9,426.3,420.9,415.9,419.1,408,393.9,392.9,391.4,379,378.8,367.3,361.3],
+  'Kreis 9':  [null,402.8,402.7,399,397,393.4,389.7,386.3,390,389.1,388.7,387,385.6,387.9,386.4,380.1,369.4,359.1,355.1,355.1,353.7,345.3,344.3,343.2],
+  'Kreis 10': [null,370.2,363.9,359.8,361.4,355.3,346.1,339.8,333,333.3,333.9,328.6,324.1,325.1,323.9,315.3,309.6,304.4,302.4,302,295.8,290.1,284.7,284.1],
+  'Kreis 11': [null,402.9,397.8,394.2,391,391.7,379.5,368.8,364.2,368.1,369.1,364,358.7,355.2,354.1,350.5,344.1,331.4,330.9,331.2,324.7,323.5,325,320.7],
+  'Kreis 12': [null,343.2,334.4,332.2,329.6,328.2,321,321.3,314.5,310,310.7,311.5,314.8,309.7,305.9,302.8,305.7,300.6,296.7,294.9,292.7,290,286.7,289],
+};
+
+const motGradMax = Math.ceil(
+  Math.max(...Object.values(motGradKreis).flat().filter(v => v !== null)) / 100
+) * 100;
+
+const kreisColors = [
+  '#3431DE','#0A8DF6','#23C3F1','#7B4FB7','#DB247D','#FB737E',
+  '#007C78','#1F9E31','#99C32E','#9A5B01','#FF720C','#FBB900',
+];
+const kreisNamen = Object.keys(motGradKreis);
+
+new Chart(document.getElementById('chartMotKreise').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: jahre,
+    datasets: kreisNamen.map((k, idx) => ({
+      label: k,
+      data: motGradKreis[k],
+      borderColor: kreisColors[idx],
+      backgroundColor: 'transparent',
+      tension: 0.3,
+      pointRadius: 1.5,
+      pointHoverRadius: 5,
+      pointBackgroundColor: kreisColors[idx],
+      borderWidth: 2,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 12, font: { size: 11 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 12 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      y: {
+        min: 0,
+        max: motGradMax,
+        title: { display: true, text: 'PW pro 1\'000 Einwohner', font: { size: 13, weight: 'bold' } },
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toFixed(0),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+});
+
+// --- Neuzulassungen nach Treibstoffart (2022–2025) ---
+
+const neuDaten = {
+  total: {
+    'Benzin':     [9158,7469,7138,6431,6287,6494,6227,5638,5777,6005,5827,5205,4818,4950,4586,4991,5268,5087,3697,3077,2330,2176,1684,1422],
+    'Diesel':     [1622,1852,1991,2321,2565,2975,3217,2697,2709,3330,4156,3947,3594,4087,4134,3796,2987,2799,1817,1388,855,774,561,509],
+    'Hybrid':     [1,3,13,48,108,170,177,169,168,198,251,290,287,322,373,402,507,925,1428,2751,2542,2695,2622,3151],
+    'Elektrisch': [0,1,0,0,0,0,0,0,85,61,49,49,128,168,190,219,196,593,714,1085,1505,1941,1955,2468],
+    'Übrige':     [6,12,37,21,47,113,76,65,47,30,37,32,32,41,52,60,50,52,57,21,9,3,1,1],
+    'Unbekannt':  [38,2,4,6,8,9,3,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0],
+  },
+  nat: {
+    'Benzin':     [5425,4659,4166,3779,3751,3854,3694,3359,3457,3716,3800,3354,3062,3330,3008,3235,3425,3237,2382,2018,1343,1253,1106,878],
+    'Diesel':     [980,1114,1066,1187,1148,1327,1318,1092,1069,1436,1838,1711,1480,1869,1857,1621,1290,1084,720,507,262,172,158,140],
+    'Hybrid':     [1,0,8,25,58,96,93,74,80,107,117,163,141,168,179,185,280,501,710,1520,1289,1270,1420,1702],
+    'Elektrisch': [0,0,0,0,0,0,0,0,3,5,9,18,28,69,79,79,84,229,359,534,690,774,831,899],
+    'Übrige':     [2,4,9,10,13,59,34,26,18,11,15,11,5,12,29,19,17,9,11,5,0,1,0,0],
+    'Unbekannt':  [32,2,4,5,5,7,2,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+  },
+  jur: {
+    'Benzin':     [3733,2810,2972,2652,2536,2640,2533,2279,2320,2289,2027,1851,1756,1620,1578,1756,1843,1850,1315,1059,987,923,578,544],
+    'Diesel':     [642,738,925,1134,1417,1648,1899,1605,1640,1894,2318,2236,2114,2218,2277,2175,1697,1715,1097,881,593,602,403,369],
+    'Hybrid':     [0,3,5,23,50,74,84,95,88,91,134,127,146,154,194,217,227,424,718,1231,1253,1425,1202,1449],
+    'Elektrisch': [0,1,0,0,0,0,0,0,82,56,40,31,100,99,111,140,112,364,355,551,815,1167,1124,1569],
+    'Übrige':     [4,8,28,11,34,54,42,39,29,19,22,21,27,29,23,41,33,43,46,16,9,2,1,1],
+    'Unbekannt':  [6,0,0,1,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+  },
+};
+
+const neuYMax = Math.ceil(
+  Math.max(...jahre.map((_, i) => Object.values(neuDaten.total).reduce((s, arr) => s + arr[i], 0))) / 2000
+) * 2000;
+
+const neuChart = new Chart(document.getElementById('chartNeuzulassungen').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: jahre,
+    datasets: Object.entries(neuDaten.total).map(([name, data]) => ({
+      label: name,
+      data: data,
+      backgroundColor: treibstoffFarben[name],
+      borderColor: '#ffffff',
+      borderWidth: 0.7,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 16, font: { size: 12 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('de-CH')}`,
+          footer: items => {
+            const total = items.reduce((s, i) => s + i.parsed.y, 0);
+            return `Total: ${total.toLocaleString('de-CH')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      y: {
+        stacked: true,
+        min: 0,
+        max: neuYMax,
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+});
+
+function updateNeuChart(filter) {
+  document.querySelectorAll('#chartNeuzulassungen').forEach(() => {});
+  const card = document.getElementById('chartNeuzulassungen').closest('.chart-card');
+  card.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === filter);
+  });
+  const src = neuDaten[filter];
+  neuChart.data.datasets.forEach(ds => {
+    ds.data = src[ds.label];
+  });
+  neuChart.update();
+}
+
+// --- Gestapeltes Balkendiagramm: Top-10-Marken ---
+
+const marken10Daten = {
+  'Volkswagen':     [18240,18271,18218,18156,18201,18139,18144,18173,18168,18228,18516,18651,18786,19229,19481,19608,19539,19075,19088,19169,18852,18615,18257,18178],
+  'BMW':            [8250,8334,8645,8709,8792,9070,9521,9791,10095,10414,10803,11194,11677,12240,12664,12913,13075,13265,13459,13563,13651,13632,13816,13932],
+  'Mercedes Benz':  [8897,9040,9262,9284,9391,9494,9601,9676,9867,9936,9998,10112,10265,10626,10971,11384,11623,11845,12394,12840,12846,13016,13519,13657],
+  'Audi':           [7588,7951,8291,8528,8778,9125,9432,9843,10172,10523,11018,11434,11586,11705,11668,11580,11492,11208,11155,11228,11075,11079,10936,10965],
+  'Opel':           [14465,13819,13281,12651,12004,11553,10860,10250,9648,9193,8430,7831,7429,6899,6510,6008,5506,5004,4669,4337,4002,3745,3467,3190],
+  'Toyota':         [7598,7321,7180,7021,6907,6798,6678,6549,6430,6400,6322,6130,6068,6020,6048,6000,5886,5886,5907,5890,5882,6090,6169,6195],
+  'Renault':        [7360,7320,7383,7426,7459,7346,7330,7252,7168,6856,6708,6567,6317,6202,6002,5854,5740,5463,5397,5225,4963,4745,4544,4454],
+  'Ford':           [7539,7053,6807,6506,6330,6114,5960,5775,5534,5395,5278,5172,4758,4638,4520,4354,4309,4219,4216,4187,4175,4121,4034,3856],
+  'Peugeot':        [5771,5779,5837,5788,5726,5749,5661,5564,5453,5370,5221,5096,4888,4808,4653,4504,4451,4285,4206,4043,3886,3715,3496,3395],
+  'Volvo':          [4082,4132,4232,4284,4416,4566,4684,4704,4699,4787,4825,4823,4783,4778,4731,4737,4773,4745,4865,4954,4850,4808,4664,4810],
+  'Übrige':         [45884,45511,45601,45732,45817,46016,46579,46612,46642,46893,47444,47817,48119,48659,49143,49650,49926,49720,50407,50761,50925,51073,51159,51311],
+};
+
+const marken10Farben = {
+  'Volkswagen':     qual6[0],
+  'BMW':            qual6[1],
+  'Mercedes Benz':  qual6[2],
+  'Audi':           qual6[3],
+  'Opel':           qual6[4],
+  'Toyota':         '#0A8DF6',
+  'Renault':        '#7B4FB7',
+  'Ford':           '#FB737E',
+  'Peugeot':        '#007C78',
+  'Volvo':          '#99C32E',
+  'Übrige':         qual6[5],
+};
+
+new Chart(document.getElementById('chartMarken10').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: jahre,
+    datasets: Object.entries(marken10Daten).map(([name, data]) => ({
+      label: name,
+      data: data,
+      backgroundColor: marken10Farben[name],
+      borderColor: '#ffffff',
+      borderWidth: 0.7,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 14, font: { size: 11 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('de-CH')}`,
+          footer: items => {
+            const total = items.reduce((s, i) => s + i.parsed.y, 0);
+            return `Total: ${total.toLocaleString('de-CH')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+});
+
+// --- Liniengrafik: Rein elektrische Marken ---
+
+const elektroMarken = {
+  'Tesla':    [null,null,null,null,null,null,null,null,null,8,11,30,76,155,282,415,501,761,1103,1431,1814,2235,2605,2864],
+  'Polestar': [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,269,354],
+  'BYD':      [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2,77],
+  'Micro':    [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,70,55],
+  'Leapmotor':[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,24],
+};
+
+const elektroFarben = {
+  'Tesla': qual6[0], 'Polestar': qual6[1], 'BYD': qual6[2], 'Micro': qual6[3], 'Leapmotor': qual6[4],
+};
+
+new Chart(document.getElementById('chartElektroMarken').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: jahre,
+    datasets: Object.entries(elektroMarken).map(([name, data]) => ({
+      label: name,
+      data: data,
+      borderColor: elektroFarben[name],
+      backgroundColor: 'transparent',
+      tension: 0.3,
+      pointRadius: 2.5,
+      pointHoverRadius: 5,
+      pointBackgroundColor: elektroFarben[name],
+      borderWidth: 2.5,
+      spanGaps: false,
+    })),
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, padding: 16, font: { size: 12 } },
+      },
+      tooltip: {
+        backgroundColor: '#333',
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        padding: 12,
+        callbacks: {
+          label: ctx => ctx.parsed.y !== null ? `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('de-CH')}` : null,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 12 } },
+      },
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: 'Anzahl Personenwagen', font: { size: 13, weight: 'bold' } },
+        ticks: {
+          font: { size: 12 },
+          callback: v => v.toLocaleString('de-CH'),
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+      },
+    },
+  },
+});
+
+// --- Gewinner / Verlierer Tabellen ---
+
+const verliererData = [
+  { marke: 'Opel', v2002: 14465, v2025: 3190, diff: -11275 },
+  { marke: 'Ford', v2002: 7539, v2025: 3856, diff: -3683 },
+  { marke: 'Renault', v2002: 7360, v2025: 4454, diff: -2906 },
+  { marke: 'Peugeot', v2002: 5771, v2025: 3395, diff: -2376 },
+  { marke: 'Nissan', v2002: 4212, v2025: 2037, diff: -2175 },
+  { marke: 'Chrysler', v2002: 1927, v2025: 146, diff: -1781 },
+  { marke: 'Fiat', v2002: 5415, v2025: 3690, diff: -1725 },
+  { marke: 'Mitsubishi', v2002: 2597, v2025: 903, diff: -1694 },
+  { marke: 'Toyota', v2002: 7598, v2025: 6195, diff: -1403 },
+  { marke: 'Mazda', v2002: 3134, v2025: 1863, diff: -1271 },
+  { marke: 'Lancia', v2002: 1549, v2025: 281, diff: -1268 },
+  { marke: 'Alfa Romeo', v2002: 2456, v2025: 1326, diff: -1130 },
+  { marke: 'Saab', v2002: 1634, v2025: 510, diff: -1124 },
+  { marke: 'Subaru', v2002: 2373, v2025: 1262, diff: -1111 },
+  { marke: 'Honda', v2002: 2516, v2025: 1649, diff: -867 },
+];
+
+const gewinnerData = [
+  { marke: 'Skoda', v2002: 601, v2025: 7711, diff: 7110 },
+  { marke: 'BMW', v2002: 8250, v2025: 13932, diff: 5682 },
+  { marke: 'Mercedes Benz', v2002: 8897, v2025: 13657, diff: 4760 },
+  { marke: 'Audi', v2002: 7588, v2025: 10965, diff: 3377 },
+  { marke: 'Tesla', v2002: 0, v2025: 2864, diff: 2864 },
+  { marke: 'Mini', v2002: 306, v2025: 2766, diff: 2460 },
+  { marke: 'Porsche', v2002: 1079, v2025: 3279, diff: 2200 },
+  { marke: 'Hyundai', v2002: 1356, v2025: 2929, diff: 1573 },
+  { marke: 'Seat', v2002: 1373, v2025: 2934, diff: 1561 },
+  { marke: 'Kia', v2002: 291, v2025: 1474, diff: 1183 },
+  { marke: 'Dacia', v2002: 0, v2025: 1044, diff: 1044 },
+  { marke: 'Land Rover', v2002: 767, v2025: 1755, diff: 988 },
+  { marke: 'Volvo', v2002: 4082, v2025: 4810, diff: 728 },
+  { marke: 'Cupra', v2002: 0, v2025: 512, diff: 512 },
+  { marke: 'Polestar', v2002: 0, v2025: 354, diff: 354 },
+];
+
+const tableSortState = {};
+
+function renderTable(tableId, data) {
+  const tbody = document.querySelector('#' + tableId + ' tbody');
+  tbody.innerHTML = data.map(r => {
+    const cls = r.diff > 0 ? 'pos' : r.diff < 0 ? 'neg' : 'zero';
+    const sign = r.diff > 0 ? '+' : '';
+    const pctText = r.v2002 === 0 ? 'neu' : sign + ((r.diff / r.v2002) * 100).toFixed(0) + '%';
+    return '<tr>' +
+      '<td>' + r.marke + '</td>' +
+      '<td class="num">' + r.v2002.toLocaleString('de-CH') + '</td>' +
+      '<td class="num">' + r.v2025.toLocaleString('de-CH') + '</td>' +
+      '<td class="num"><span class="badge ' + cls + '">' + sign + r.diff.toLocaleString('de-CH') + ' (' + pctText + ')</span></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function sortTable(tableId, col) {
+  const key = tableId + '_' + col;
+  const prev = tableSortState[key] || 'asc';
+  const dir = prev === 'asc' ? 'desc' : 'asc';
+  tableSortState[key] = dir;
+  const data = tableId === 'tableVerlierer' ? verliererData : gewinnerData;
+  data.sort((a, b) => {
+    const va = a[col], vb = b[col];
+    if (typeof va === 'string') return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return dir === 'asc' ? va - vb : vb - va;
+  });
+  const table = document.getElementById(tableId);
+  table.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sorted');
+    th.querySelector('.sort-arrow').textContent = '▴▾';
+  });
+  const th = table.querySelector('th[data-col="' + col + '"]');
+  th.classList.add('sorted');
+  th.querySelector('.sort-arrow').textContent = dir === 'asc' ? '▴' : '▾';
+  renderTable(tableId, data);
+}
+
+renderTable('tableVerlierer', verliererData);
+renderTable('tableGewinner', gewinnerData);
+
+</script>
+</body>
+</html>

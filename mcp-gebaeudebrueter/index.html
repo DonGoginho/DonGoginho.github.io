@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gebäudebrüter Stadt Zürich</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', Helvetica, Arial, sans-serif;
+      background: #f4f4f4;
+      color: #000;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #0F05A0;
+      color: white;
+      padding: 2.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .header-text {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.05rem;
+      opacity: 0.85;
+    }
+
+    .header-logo a {
+      display: block;
+    }
+
+    .header-logo img {
+      height: 100px;
+      width: auto;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
+      cursor: pointer;
+    }
+
+    .header-logo img:hover {
+      transform: rotateY(360deg) scale(1.08);
+      filter: drop-shadow(0 4px 16px rgba(255,215,54,0.5));
+    }
+
+    main {
+      max-width: 888px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card h2 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #0F05A0;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-card .subtitle {
+      font-size: 0.9rem;
+      color: #646464;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      max-height: 480px;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+
+    .kpi .value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0F05A0;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .kpi .value.text-value {
+      font-size: 1.35rem;
+    }
+
+    .kpi .label {
+      font-size: 0.85rem;
+      color: #646464;
+      margin-top: 0.25rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.8rem;
+      color: #646464;
+      border-top: 1px solid #dedede;
+    }
+
+    footer a { color: #0F05A0; text-decoration: underline; }
+    footer a:hover { color: #0353DC; }
+
+    .chart-source {
+      font-size: 0.78rem;
+      color: #646464;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+
+    .chart-source a { color: #0F05A0; text-decoration: underline; }
+    .chart-source a:hover { color: #0353DC; }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-btn {
+      padding: 0.35rem 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
+      color: #545454;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .filter-btn:hover { border-color: #0F05A0; color: #0F05A0; }
+    .filter-btn.active { background: #0F05A0; color: white; border-color: #0F05A0; }
+
+    nav {
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav ul {
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      list-style: none;
+      max-width: 888px;
+      margin: 0 auto;
+      padding: 0.6rem 1.5rem;
+    }
+
+    nav a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      color: #545454;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    nav a:hover { background: #eff5ff; color: #0F05A0; }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #0F05A0;
+      margin-bottom: 1.25rem;
+      padding-top: 1rem;
+    }
+
+    #map {
+      height: 500px;
+      border-radius: 4px;
+      z-index: 1;
+    }
+
+    .map-legend {
+      background: white;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      font-size: 0.8rem;
+      line-height: 1.8;
+    }
+
+    .map-legend i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .table-card th {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid #e0e0e0;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      color: #545454;
+      font-weight: 600;
+    }
+
+    .table-card th:hover { color: #0F05A0; }
+    .table-card th .sort-arrow { font-size: 0.7rem; margin-left: 0.3rem; opacity: 0.4; }
+    .table-card th.sorted .sort-arrow { opacity: 1; color: #0F05A0; }
+
+    .table-card td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .table-card tr:hover td { background: #f4f4f4; }
+
+    .strasse-link { color: #0F05A0; text-decoration: underline; cursor: pointer; }
+    .strasse-link:hover { color: #0353DC; }
+
+    .table-card td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .badge.pos { background: #e8f5e9; color: #2e7d32; }
+    .badge.neg { background: #fce4ec; color: #c62828; }
+
+    .intro-text {
+      font-size: 0.95rem;
+      color: #545454;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .intro-text a { color: #0F05A0; text-decoration: underline; }
+    .intro-text a:hover { color: #0353DC; }
+
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .tables-grid .chart-card { margin-bottom: 0; }
+
+    @media (max-width: 700px) {
+      .tables-grid { grid-template-columns: 1fr; }
+      #map { height: 350px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <h1>Gebäudebrüter der Stadt Zürich</h1>
+    <p>Interaktive Auswertung der Nistplatzstandorte auf Basis der Open-Data-Geodaten von Grün Stadt Zürich</p>
+  </div>
+  <div class="header-logo">
+    <a href="https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html" target="_blank" rel="noopener">
+      <img src="../assets/2026_logo_mcp_server_alex.png" alt="MCP-Server Logo">
+    </a>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#uebersicht">Übersicht</a></li>
+    <li><a href="#karte">Karte</a></li>
+    <li><a href="#arten">Vogelarten</a></li>
+  </ul>
+</nav>
+
+<main>
+  <h2 class="section-title" id="uebersicht">Übersicht</h2>
+
+  <div class="chart-card">
+    <p class="intro-text">
+      Gebäudebrüter sind Vogelarten, die an oder in Gebäuden nisten – darunter Mauersegler, Alpensegler, Mehlschwalben, Turmfalken und Schleiereulen.
+      Die Abteilung <a href="https://www.stadt-zuerich.ch/de/umwelt-und-energie/natur/naturschutz-und-stadtoekologie/kartierungen-und-inventare.html" target="_blank" rel="noopener"><strong>Artenförderung und Schutzgebiete</strong></a>
+      von Grün Stadt Zürich führt ein Inventar aller bekannten
+      Nistplatzstandorte in der Stadt. Erfasst werden die genaue Lage am Gebäude, die Vogelart sowie der Schutzstatus:
+      Befindet sich der Nistplatz an einem <a href="https://www.stadt-zuerich.ch/de/umwelt-und-energie/natur/naturschutz-und-stadtoekologie/schutzgebiete.html" target="_blank" rel="noopener"><strong>KSO (kommunalen Natur- und Landschaftsschutzobjekt)</strong></a>,
+      gelten bei Renovationen oder Umbauten besondere Auflagen zum Erhalt der Brutstätten.
+      Die Daten stehen als <a href="https://data.stadt-zuerich.ch/dataset/geo_gebaeudebrueter" target="_blank" rel="noopener">Open Data</a>
+      frei zur Verfügung und werden hier interaktiv aufbereitet.
+    </p>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <h2 class="section-title" id="karte">Nistplatzstandorte</h2>
+
+  <div class="chart-card">
+    <h2>Karte aller Gebäudebrüter-Standorte</h2>
+    <p class="subtitle">Inventar der Nistplatzstandorte in der Stadt Zürich</p>
+    <div class="filter-row" id="mapFilterRow"></div>
+    <div id="map"></div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/geo_gebaeudebrueter" target="_blank" rel="noopener">Gebäudebrüter – Inventar Nistplatzstandorte</a>
+      – Grün Stadt Zürich, Tiefbau- und Entsorgungsdepartement, CC0
+    </p>
+  </div>
+
+  <div class="chart-card table-card">
+    <h2>Top-Strassen mit den meisten Nistplätzen</h2>
+    <p class="subtitle">Strassen mit der höchsten Konzentration an Gebäudebrüter-Standorten</p>
+    <table id="tableStrassen">
+      <thead>
+        <tr>
+          <th data-col="strasse" onclick="sortTable('tableStrassen','strasse')">Strasse <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+          <th data-col="anzahl" class="sorted" onclick="sortTable('tableStrassen','anzahl')">Standorte <span class="sort-arrow">&#x25BE;</span></th>
+          <th data-col="arten" onclick="sortTable('tableStrassen','arten')">Vogelarten <span class="sort-arrow">&#x25B4;&#x25BE;</span></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/geo_gebaeudebrueter" target="_blank" rel="noopener">Gebäudebrüter – Inventar Nistplatzstandorte</a>
+      – Grün Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <h2 class="section-title" id="arten">Vogelarten</h2>
+
+  <div class="chart-card">
+    <h2>Nistplatzstandorte nach Vogelart</h2>
+    <p class="subtitle">Anzahl inventarisierte Standorte pro Vogelart</p>
+    <div class="chart-wrap">
+      <canvas id="chartArten"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/geo_gebaeudebrueter" target="_blank" rel="noopener">Gebäudebrüter – Inventar Nistplatzstandorte</a>
+      – Grün Stadt Zürich, CC0
+    </p>
+  </div>
+
+  <div class="chart-card">
+    <h2>Vogelarten pro Stadtkreis</h2>
+    <p class="subtitle">Verteilung der Nistplatzstandorte nach Vogelart und Stadtkreis (Spatial Join)</p>
+    <div class="chart-wrap" style="max-height: 520px;">
+      <canvas id="chartKreise"></canvas>
+    </div>
+    <p class="chart-source">
+      Quelle: <a href="https://data.stadt-zuerich.ch/dataset/geo_gebaeudebrueter" target="_blank" rel="noopener">Gebäudebrüter</a> ×
+      <a href="https://data.stadt-zuerich.ch/dataset/geo_stadtkreise" target="_blank" rel="noopener">Stadtkreise</a>
+      – Stadt Zürich, CC0
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  Alle Daten: <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">Open Government Data der Stadt Zürich</a>
+  – Grün Stadt Zürich, Tiefbau- und Entsorgungsdepartement &middot; Lizenz: CC0
+</footer>
+
+<script>
+// zuericolors qual6
+const qual6 = ['#3431DE','#DB247D','#1F9E31','#FBB900','#23C3F1','#FF720C'];
+
+// Hauptarten für Charts (>9 Standorte), alle anderen → Übrige
+const HAUPTARTEN = ['Mauersegler','Alpensegler','Segler sp.','Mehlschwalbe','Rauchschwalbe'];
+// Karte: zusätzlich Turmfalke, Dohle, Schleiereule einzeln
+const KARTENARTEN = [...HAUPTARTEN, 'Turmfalke','Dohle','Schleiereule'];
+
+const artenFarben = {
+  'Mauersegler':     qual6[0],
+  'Alpensegler':     qual6[1],
+  'Segler sp.':      qual6[2],
+  'Mehlschwalbe':    qual6[3],
+  'Rauchschwalbe':   qual6[4],
+  'Turmfalke':       '#8B5CF6',
+  'Dohle':           '#EC4899',
+  'Schleiereule':    '#06B6D4',
+  'Übrige':          qual6[5],
+};
+
+function artGruppe(art) {
+  return HAUPTARTEN.includes(art) ? art : 'Übrige';
+}
+
+function artGruppeKarte(art) {
+  return KARTENARTEN.includes(art) ? art : 'Übrige';
+}
+
+const WFS_URL = 'https://www.ogd.stadt-zuerich.ch/wfs/geoportal/Gebaeudebrueter';
+const KREISE_WFS = 'https://www.ogd.stadt-zuerich.ch/wfs/geoportal/Stadtkreise';
+
+// --- Daten laden und Visualisierungen aufbauen ---
+async function loadData() {
+  try {
+    const [geojson, kreise] = await Promise.all([
+      fetch(`${WFS_URL}?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&outputFormat=GeoJSON&typeName=gebaeudebrueter_inventar&maxFeatures=10000`)
+        .then(r => r.json()),
+      fetch(`${KREISE_WFS}?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&outputFormat=GeoJSON&typeName=adm_stadtkreise_a&maxFeatures=100`)
+        .then(r => r.json())
+        .then(j => j.features || [])
+        .catch(e => { console.warn('Stadtkreise konnten nicht geladen werden:', e); return []; }),
+    ]);
+    const features = geojson.features;
+
+    computeCentroids(features);
+    if (kreise.length > 0) assignKreise(features, kreise);
+
+    buildKPIs(features);
+    buildMap(features, kreise);
+    buildArtenChart(features);
+    buildStrassenTable(features);
+    if (kreise.length > 0) buildKreisChart(features);
+  } catch (err) {
+    console.error('Fehler beim Laden der Daten:', err);
+    document.getElementById('kpiRow').innerHTML =
+      `<div class="kpi"><div class="value" style="font-size:1rem;color:#c62828">Fehler beim Laden</div><div class="label">${err.message}</div></div>`;
+  }
+}
+
+function countByField(features, field, grouped) {
+  const counts = {};
+  features.forEach(f => {
+    const raw = f.properties[field] || 'unbekannt';
+    const val = grouped ? artGruppe(raw) : raw;
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  return counts;
+}
+
+// --- Spatial Join: Point-in-Polygon ---
+function pointInPolygon(point, rings) {
+  const [x, y] = point;
+  let inside = false;
+  for (const ring of rings) {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i];
+      const [xj, yj] = ring[j];
+      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+        inside = !inside;
+      }
+    }
+  }
+  return inside;
+}
+
+function getKreisName(kreisFeature) {
+  const p = kreisFeature.properties;
+  return p.bezeichnung || p.name || ('Kreis ' + (p.knr || '?'));
+}
+
+function computeCentroids(features) {
+  features.forEach(f => {
+    const coords = f.geometry.coordinates[0];
+    let lat = 0, lng = 0;
+    coords.forEach(c => { lng += c[0]; lat += c[1]; });
+    f.properties._centroid = [lat / coords.length, lng / coords.length];
+  });
+}
+
+function polygonBBox(rings) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const ring of rings) {
+    for (const [x, y] of ring) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  return [minX, minY, maxX, maxY];
+}
+
+function assignKreise(features, kreise) {
+  const prepared = kreise.map(k => {
+    const geom = k.geometry;
+    const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+    return { name: getKreisName(k), polys: polys.map(p => ({ rings: p, bbox: polygonBBox(p) })) };
+  });
+
+  features.forEach(f => {
+    const [lat, lng] = f.properties._centroid;
+    for (const k of prepared) {
+      for (const { rings, bbox } of k.polys) {
+        if (lng < bbox[0] || lng > bbox[2] || lat < bbox[1] || lat > bbox[3]) continue;
+        if (pointInPolygon([lng, lat], rings)) {
+          f.properties._kreisName = k.name;
+          return;
+        }
+      }
+    }
+    f.properties._kreisName = 'unbekannt';
+  });
+}
+
+// --- KPI-Kacheln ---
+function buildKPIs(features) {
+  const total = features.length;
+  const artenCounts = countByField(features, 'vogelarten');
+  const anzahlArten = Object.keys(artenCounts).length;
+  const ksoJa = features.filter(f => f.properties.kso_objekt === 'Ja').length;
+  const topArt = Object.entries(artenCounts).sort((a, b) => b[1] - a[1])[0];
+
+  const kpis = [
+    { value: total.toLocaleString('de-CH'), label: 'Nistplatzstandorte' },
+    { value: anzahlArten, label: 'Vogelarten' },
+    { value: topArt[0], label: `Häufigste Art (${topArt[1]})` },
+    { value: ksoJa, label: 'An KSO-Objekten' },
+  ];
+
+  const row = document.getElementById('kpiRow');
+  row.innerHTML = kpis.map(k => {
+    const cls = typeof k.value === 'string' && isNaN(k.value.replace(/['\s]/g, '')) ? ' text-value' : '';
+    return `<div class="kpi"><div class="value${cls}">${k.value}</div><div class="label">${k.label}</div></div>`;
+  }).join('');
+}
+
+// --- Karte ---
+let theMap;
+let allMarkers = [];
+let activeArt = 'Alle';
+function updateMapFilters() {
+  allMarkers.forEach(({marker, gruppe}) => {
+    const show = activeArt === 'Alle' || gruppe === activeArt;
+    if (show) {
+      if (!theMap.hasLayer(marker)) marker.addTo(theMap);
+    } else {
+      if (theMap.hasLayer(marker)) theMap.removeLayer(marker);
+    }
+  });
+}
+
+function buildMap(features, kreise) {
+  const map = L.map('map').setView([47.38, 8.54], 12);
+  theMap = map;
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  kreise.forEach(k => {
+    L.geoJSON(k.geometry, {
+      style: { color: '#0F05A0', weight: 1.5, fillOpacity: 0.03, dashArray: '4 4' },
+    }).addTo(map);
+    const geom = k.geometry;
+    const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+    const ring = polys[0][0];
+    let cx = 0, cy = 0;
+    ring.forEach(c => { cx += c[0]; cy += c[1]; });
+    cx /= ring.length; cy /= ring.length;
+    const name = getKreisName(k);
+    const nr = name.replace(/[^0-9]/g, '');
+    L.marker([cy, cx], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="font-size:13px;font-weight:700;color:#0F05A0;opacity:0.55;text-align:center;line-height:1.1;white-space:nowrap">Kreis ${nr}</div>`,
+        iconSize: [50, 30],
+        iconAnchor: [25, 15],
+      }),
+      interactive: false,
+    }).addTo(map);
+  });
+
+  const gruppen = [...KARTENARTEN, 'Übrige'];
+  const gruppenCounts = {};
+  gruppen.forEach(g => { gruppenCounts[g] = 0; });
+
+  allMarkers = [];
+  features.forEach(f => {
+    const rawArt = f.properties.vogelarten || 'unbekannt';
+    const gruppe = artGruppeKarte(rawArt);
+    const kreisName = f.properties._kreisName || 'unbekannt';
+    gruppenCounts[gruppe]++;
+    const color = artenFarben[gruppe];
+    const [lat, lng] = f.properties._centroid;
+
+    const marker = L.circleMarker([lat, lng], {
+      radius: 5,
+      fillColor: color,
+      color: '#fff',
+      weight: 1,
+      fillOpacity: 0.85,
+    });
+    marker.bindPopup(
+      `<strong>${rawArt}</strong><br>${f.properties.adresse}<br>${kreisName}<br>KSO: ${f.properties.kso_objekt}`
+    );
+    marker.addTo(map);
+    allMarkers.push({ marker, gruppe, kreisName });
+  });
+
+  const filterRow = document.getElementById('mapFilterRow');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.textContent = 'Alle Arten';
+  allBtn.onclick = () => {
+    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+    activeArt = 'Alle';
+    updateMapFilters();
+  };
+  filterRow.appendChild(allBtn);
+
+  gruppen.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = `${g} (${gruppenCounts[g]})`;
+    btn.onclick = () => {
+      filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeArt = g;
+      updateMapFilters();
+    };
+    filterRow.appendChild(btn);
+  });
+
+  const legend = L.control({ position: 'bottomright' });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create('div', 'map-legend');
+    div.innerHTML = '<strong>Vogelarten</strong><br>' +
+      gruppen.map(g =>
+        `<i style="background:${artenFarben[g]}"></i>${g}`
+      ).join('<br>');
+    return div;
+  };
+  legend.addTo(map);
+}
+
+// --- Balkendiagramm Vogelarten ---
+function buildArtenChart(features) {
+  const counts = countByField(features, 'vogelarten', true);
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  new Chart(document.getElementById('chartArten').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([art]) => art),
+      datasets: [{
+        label: 'Standorte',
+        data: sorted.map(([, n]) => n),
+        backgroundColor: sorted.map(([art]) => artenFarben[art] || '#999'),
+        borderColor: '#ffffff',
+        borderWidth: 0.7,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#333',
+          titleFont: { size: 14 },
+          bodyFont: { size: 13 },
+          padding: 12,
+          callbacks: {
+            label: ctx => `${ctx.parsed.x.toLocaleString('de-CH')} Standorte`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.06)' },
+          ticks: { font: { size: 12 } },
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { size: 12 } },
+        },
+      },
+    },
+  });
+}
+
+// --- Stadtkreis-Chart (Spatial Join) ---
+function buildKreisChart(features) {
+  const kreisArtCounts = {};
+  features.forEach(f => {
+    const kreis = f.properties._kreisName;
+    if (kreis === 'unbekannt') return;
+    const art = artGruppe(f.properties.vogelarten || 'unbekannt');
+    if (!kreisArtCounts[kreis]) kreisArtCounts[kreis] = {};
+    kreisArtCounts[kreis][art] = (kreisArtCounts[kreis][art] || 0) + 1;
+  });
+
+  const kreisNames = Object.keys(kreisArtCounts).sort((a, b) =>
+    (parseInt(a.replace(/\D/g, '')) || 0) - (parseInt(b.replace(/\D/g, '')) || 0)
+  );
+
+  const artLabels = [...HAUPTARTEN, 'Übrige'];
+  const datasets = artLabels.map(art => ({
+    label: art,
+    data: kreisNames.map(k => kreisArtCounts[k][art] || 0),
+    backgroundColor: artenFarben[art] || '#999',
+  }));
+
+  new Chart(document.getElementById('chartKreise').getContext('2d'), {
+    type: 'bar',
+    data: { labels: kreisNames, datasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { usePointStyle: true, padding: 14, font: { size: 11 } },
+        },
+        tooltip: {
+          backgroundColor: '#333',
+          titleFont: { size: 14 },
+          bodyFont: { size: 13 },
+          padding: 12,
+          mode: 'index',
+          callbacks: {
+            label: ctx => {
+              if (ctx.parsed.x === 0) return null;
+              return `${ctx.dataset.label}: ${ctx.parsed.x.toLocaleString('de-CH')}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.06)' },
+          ticks: { font: { size: 12 } },
+          title: { display: true, text: 'Anzahl Nistplatzstandorte', font: { size: 12 } },
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { font: { size: 12 } },
+        },
+      },
+    },
+  });
+}
+
+// --- Strassen-Tabelle ---
+function buildStrassenTable(features) {
+  const strassenMap = {};
+  features.forEach(f => {
+    const addr = f.properties.adresse || '';
+    const strasse = addr.replace(/\s+\d+.*$/, '').replace(/\s*\(.*$/, '').trim();
+    if (!strasse) return;
+    if (!strassenMap[strasse]) strassenMap[strasse] = { count: 0, arten: new Set(), lats: [], lngs: [] };
+    strassenMap[strasse].count++;
+    strassenMap[strasse].arten.add(f.properties.vogelarten);
+    const coords = f.geometry.coordinates[0];
+    let lat = 0, lng = 0;
+    coords.forEach(c => { lng += c[0]; lat += c[1]; });
+    strassenMap[strasse].lats.push(lat / coords.length);
+    strassenMap[strasse].lngs.push(lng / coords.length);
+  });
+
+  window.strassenData = Object.entries(strassenMap)
+    .map(([strasse, d]) => ({
+      strasse,
+      anzahl: d.count,
+      arten: d.arten.size,
+      bounds: [
+        [Math.min(...d.lats) - 0.001, Math.min(...d.lngs) - 0.001],
+        [Math.max(...d.lats) + 0.001, Math.max(...d.lngs) + 0.001],
+      ],
+    }))
+    .sort((a, b) => b.anzahl - a.anzahl)
+    .slice(0, 20);
+
+  renderStrassenTable();
+}
+
+function zoomToStrasse(idx) {
+  const row = window.strassenData[idx];
+  if (!row || !theMap) return;
+  document.getElementById('karte').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => theMap.fitBounds(row.bounds, { maxZoom: 17 }), 400);
+}
+
+function renderStrassenTable() {
+  const tbody = document.querySelector('#tableStrassen tbody');
+  tbody.innerHTML = window.strassenData.map((r, i) =>
+    `<tr><td><a href="#karte" class="strasse-link" onclick="event.preventDefault();zoomToStrasse(${i})">${r.strasse}</a></td><td class="num">${r.anzahl}</td><td class="num">${r.arten}</td></tr>`
+  ).join('');
+}
+
+const tableSortState = {};
+function sortTable(tableId, col) {
+  const key = tableId + '_' + col;
+  const prev = tableSortState[key] || 'asc';
+  const dir = prev === 'asc' ? 'desc' : 'asc';
+  tableSortState[key] = dir;
+
+  window.strassenData.sort((a, b) => {
+    const va = a[col], vb = b[col];
+    if (typeof va === 'string') return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return dir === 'asc' ? va - vb : vb - va;
+  });
+
+  const table = document.getElementById(tableId);
+  table.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sorted');
+    th.querySelector('.sort-arrow').textContent = '▴▾';
+  });
+  const th = table.querySelector(`th[data-col="${col}"]`);
+  th.classList.add('sorted');
+  th.querySelector('.sort-arrow').textContent = dir === 'asc' ? '▴' : '▾';
+  renderStrassenTable();
+}
+
+loadData();
+
+</script>
+</body>
+</html>
