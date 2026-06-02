@@ -27,7 +27,6 @@ dongoginho.github.io/
 ├── mcp-hunde/                 Hunde-Beispiel
 │   ├── index.html
 │   ├── update_data.py         Daten-Update-Script
-│   ├── CLAUDE.md              Technische Dokumentation
 │   └── README.md
 └── mcp-gebaeudebrueter/       Gebäudebrüter-Beispiel
     ├── index.html

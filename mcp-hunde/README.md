@@ -30,7 +30,6 @@ Die Seite ist in Kapitel gegliedert, erreichbar ueber eine Sticky-Navigation:
 |---|---|
 | `index.html` | Die komplette Webseite (HTML, CSS, JS alles inline) |
 | `update_data.py` | Python-Script zur automatischen Datenaktualisierung |
-| `CLAUDE.md` | Technische Dokumentation fuer die Weiterentwicklung mit Claude |
 | `README.md` | Diese Datei |
 
 ## Datenquellen
@@ -104,6 +103,6 @@ Das Script fragt 8 Datenbereiche von der CKAN API ab und ersetzt die entsprechen
 - Responsive Design (Desktop, Tablet, Mobile)
 - Farbschema: [zuericolors](https://github.com/StatistikStadtZuerich/zuericolors) (Corporate Design Stadt Zuerich)
 
-## Weiterentwicklung
+## Weitere Beispiele
 
-Details zur Codestruktur, allen Datenquellen und Ideen fuer weitere Grafiken finden sich in `CLAUDE.md`. Diese Datei ist speziell darauf ausgelegt, mit Claude Code weiterentwickeln zu koennen.
+Alle MCP-Server-Beispiele: [dongoginho.github.io](https://dongoginho.github.io/)
