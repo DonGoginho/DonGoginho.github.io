@@ -128,9 +128,32 @@
 
     footer a { color: #0F05A0; text-decoration: underline; }
     footer a:hover { color: #0353DC; }
+
+    .site-nav {
+      background: #070250;
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .site-nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .site-nav a:hover { color: #fff; }
+    .site-nav a.active { color: #fff; font-weight: 500; }
   </style>
 </head>
-<body>
+<body id="top">
+
+<nav class="site-nav">
+  <a class="active" href="./index.html">Übersicht</a>
+  <a href="./mcp-personenwagen/index.html">Personenwagen</a>
+  <a href="./mcp-hunde/index.html">Hunde</a>
+  <a href="./mcp-gebaeudebrueter/index.html">Gebäudebrüter</a>
+</nav>
 
 <header>
   <h1>Open Data Stadt Zürich</h1>
@@ -148,21 +171,23 @@
       <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">data.stadt-zuerich.ch</a> (Lizenz: CC0).
     </p>
     <div class="cards">
-      <a class="card" href="./mcp-personenwagen/">
+      <a class="card" href="./mcp-personenwagen/index.html">
         <h3>Personenwagen in der Stadt Zürich</h3>
         <p>Auswertung der Personenwagen-Daten nach Quartier, Antriebsart und Zeitverlauf.</p>
       </a>
-      <a class="card" href="./mcp-hunde/">
+      <a class="card" href="./mcp-hunde/index.html">
         <h3>Hunde in der Stadt Zürich</h3>
         <p>Übersicht über die registrierten Hunde nach Rasse, Quartier und Geschlecht.</p>
       </a>
-      <a class="card" href="./mcp-gebaeudebrueter/">
+      <a class="card" href="./mcp-gebaeudebrueter/index.html">
         <h3>Gebäudebrüter in der Stadt Zürich</h3>
         <p>Standorte und Entwicklung von Gebäudebrütern wie Mauerseglern und Fledermäusen.</p>
       </a>
     </div>
   </section>
 </main>
+
+<div style="text-align: center; padding: 1.5rem 1rem;"><a href="#top" style="color: #0F05A0; text-decoration: underline; font-size: 0.875rem;">↑ Nach oben</a></div>
 
 <footer>
   Daten: <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">Open Government Data der Stadt Zürich</a> &middot; Lizenz: CC0

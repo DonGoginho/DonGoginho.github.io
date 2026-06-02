@@ -10,17 +10,21 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .breadcrumb {
+    .site-nav {
       background: #070250;
       padding: 0.5rem 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
     }
-    .breadcrumb a {
-      color: rgba(255,255,255,0.85);
+    .site-nav a {
+      color: rgba(255,255,255,0.7);
       text-decoration: none;
       font-size: 0.875rem;
       font-family: 'Inter', sans-serif;
     }
-    .breadcrumb a:hover { color: #fff; }
+    .site-nav a:hover { color: #fff; }
+    .site-nav a.active { color: #fff; font-weight: 500; }
 
     body {
       font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -142,7 +146,7 @@
     footer a { color: #0F05A0; text-decoration: underline; }
     footer a:hover { color: #0353DC; }
 
-    nav {
+    .chapter-nav {
       background: white;
       border-bottom: 1px solid #e0e0e0;
       position: sticky;
@@ -151,7 +155,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
-    nav ul {
+    .chapter-nav ul {
       list-style: none;
       display: flex;
       max-width: 888px;
@@ -160,7 +164,7 @@
       gap: 0;
     }
 
-    nav li a {
+    .chapter-nav li a {
       display: block;
       padding: 0.85rem 1.25rem;
       text-decoration: none;
@@ -171,12 +175,12 @@
       transition: color 0.2s, border-color 0.2s;
     }
 
-    nav li a:hover {
+    .chapter-nav li a:hover {
       color: #0F05A0;
       border-bottom-color: #0F05A0;
     }
 
-    nav li a.active {
+    .chapter-nav li a.active {
       color: #0F05A0;
       border-bottom-color: #0F05A0;
     }
@@ -344,9 +348,9 @@
       header p { font-size: 0.85rem; }
       .header-logo img { height: 70px; }
 
-      nav ul { padding: 0 0.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      nav li { flex-shrink: 0; }
-      nav li a { padding: 0.7rem 0.75rem; font-size: 0.8rem; white-space: nowrap; }
+      .chapter-nav ul { padding: 0 0.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .chapter-nav li { flex-shrink: 0; }
+      .chapter-nav li a { padding: 0.7rem 0.75rem; font-size: 0.8rem; white-space: nowrap; }
 
       main { padding: 0 0.75rem; margin: 1rem auto; }
 
@@ -384,11 +388,16 @@
       .pyramid-grid { grid-template-columns: 1fr; }
     }
   </style>
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
-<body>
+<body id="top">
 
-<nav class="breadcrumb"><a href="../">&larr; Übersicht</a></nav>
+<nav class="site-nav">
+  <a href="../index.html">Übersicht</a>
+  <a href="../mcp-personenwagen/index.html">Personenwagen</a>
+  <a class="active" href="../mcp-hunde/index.html">Hunde</a>
+  <a href="../mcp-gebaeudebrueter/index.html">Gebäudebrüter</a>
+</nav>
 
 <header>
   <div class="header-text">
@@ -402,7 +411,7 @@
   </div>
 </header>
 
-<nav>
+<nav class="chapter-nav">
   <ul>
     <li><a href="#kap-bestand">Entwicklung des Hundebestands</a></li>
     <li><a href="#kap-rassen">Beliebteste Hunderassen</a></li>
@@ -558,6 +567,8 @@
   <img id="rasseTooltipImg" src="" alt="">
   <div class="tt-label">Bild: Wikipedia</div>
 </div>
+
+<div style="text-align: center; padding: 1.5rem 1rem;"><a href="#top" style="color: #0F05A0; text-decoration: underline; font-size: 0.875rem;">↑ Nach oben</a></div>
 
 <footer>
   Datenquellen:
@@ -1383,11 +1394,11 @@ function setupNamenTabelle(data, bodyId, filterId, tableId) {
 setupNamenTabelle(namenW, 'namenBodyW', 'namenFilterW', 'namenTabelleW');
 setupNamenTabelle(namenM, 'namenBodyM', 'namenFilterM', 'namenTabelleM');
 
-const navLinks = document.querySelectorAll('nav a');
+const navLinks = document.querySelectorAll('.chapter-nav a');
 const sections = document.querySelectorAll('main section');
 
 function updateActiveNav() {
-  const navH = document.querySelector('nav').offsetHeight;
+  const navH = document.querySelector('.chapter-nav').offsetHeight;
   let current = '';
   for (const s of sections) {
     if (s.getBoundingClientRect().top <= navH + 20) current = s.id;
@@ -1404,7 +1415,7 @@ navLinks.forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
     const target = document.querySelector(a.getAttribute('href'));
-    const navH = document.querySelector('nav').offsetHeight;
+    const navH = document.querySelector('.chapter-nav').offsetHeight;
     window.scrollTo({ top: target.offsetTop - navH, behavior: 'smooth' });
   });
 });

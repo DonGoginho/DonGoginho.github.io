@@ -11,17 +11,21 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .breadcrumb {
+    .site-nav {
       background: #070250;
       padding: 0.5rem 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
     }
-    .breadcrumb a {
-      color: rgba(255,255,255,0.85);
+    .site-nav a {
+      color: rgba(255,255,255,0.7);
       text-decoration: none;
       font-size: 0.875rem;
       font-family: 'Inter', sans-serif;
     }
-    .breadcrumb a:hover { color: #fff; }
+    .site-nav a:hover { color: #fff; }
+    .site-nav a.active { color: #fff; font-weight: 500; }
 
     body {
       font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -182,7 +186,7 @@
     .filter-btn:hover { border-color: #0F05A0; color: #0F05A0; }
     .filter-btn.active { background: #0F05A0; color: white; border-color: #0F05A0; }
 
-    nav {
+    .chapter-nav {
       background: white;
       border-bottom: 1px solid #e0e0e0;
       position: sticky;
@@ -190,7 +194,7 @@
       z-index: 100;
     }
 
-    nav ul {
+    .chapter-nav ul {
       display: flex;
       justify-content: center;
       gap: 0.25rem;
@@ -200,7 +204,7 @@
       padding: 0.6rem 1.5rem;
     }
 
-    nav a {
+    .chapter-nav a {
       display: block;
       padding: 0.4rem 1rem;
       border-radius: 8px;
@@ -211,7 +215,7 @@
       transition: background 0.15s, color 0.15s;
     }
 
-    nav a:hover { background: #eff5ff; color: #0F05A0; }
+    .chapter-nav a:hover { background: #eff5ff; color: #0F05A0; }
 
     .section-title {
       font-size: 1.5rem;
@@ -313,12 +317,17 @@
       #map { height: 350px; }
     }
   </style>
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<body>
+<body id="top">
 
-<nav class="breadcrumb"><a href="../">&larr; Übersicht</a></nav>
+<nav class="site-nav">
+  <a href="../index.html">Übersicht</a>
+  <a href="../mcp-personenwagen/index.html">Personenwagen</a>
+  <a href="../mcp-hunde/index.html">Hunde</a>
+  <a class="active" href="../mcp-gebaeudebrueter/index.html">Gebäudebrüter</a>
+</nav>
 
 <header>
   <div class="header-text">
@@ -332,7 +341,7 @@
   </div>
 </header>
 
-<nav>
+<nav class="chapter-nav">
   <ul>
     <li><a href="#uebersicht">Übersicht</a></li>
     <li><a href="#karte">Karte</a></li>
@@ -418,6 +427,8 @@
   </div>
 
 </main>
+
+<div style="text-align: center; padding: 1.5rem 1rem;"><a href="#top" style="color: #0F05A0; text-decoration: underline; font-size: 0.875rem;">↑ Nach oben</a></div>
 
 <footer>
   Alle Daten: <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">Open Government Data der Stadt Zürich</a>
