@@ -63,7 +63,7 @@ Wenn die Stadt Zuerich neue Daten veroeffentlicht (jeweils nach dem 31. Dezember
    ```
    Falls Python nicht direkt im PATH ist (z.B. bei Anaconda):
    ```
-   "C:\Users\sszsim\AppData\Local\anaconda3\python.exe" update_data.py --dry-run
+   "C:\Users\*USER*\AppData\Local\anaconda3\python.exe" update_data.py --dry-run
    ```
 
 3. **Daten aktualisieren** (ueberschreibt `index.html`):
