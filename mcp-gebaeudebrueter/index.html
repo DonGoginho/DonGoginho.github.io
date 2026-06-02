@@ -7,11 +7,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .breadcrumb {
+      background: #070250;
+      padding: 0.5rem 1.5rem;
+    }
+    .breadcrumb a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .breadcrumb a:hover { color: #fff; }
 
     body {
       font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -303,8 +313,12 @@
       #map { height: 350px; }
     }
   </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
+
+<nav class="breadcrumb"><a href="../">&larr; Übersicht</a></nav>
 
 <header>
   <div class="header-text">

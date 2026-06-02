@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCP-Server Beispiele – Open Data Stadt Zürich</title>
+  <title>Open Data Stadt Zürich – Interaktive Auswertungen</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;900&display=swap" rel="stylesheet">
@@ -48,22 +48,7 @@
       padding: 0 1.5rem;
     }
 
-    .intro {
-      background: white;
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      padding: 1.5rem 2rem;
-      margin-bottom: 2rem;
-      font-size: 1.125rem;
-      font-weight: 500;
-      color: #000;
-      line-height: 1.5;
-    }
-
-    .intro a { color: #0F05A0; text-decoration: underline; }
-    .intro a:hover { color: #0353DC; }
-
-    #apps {
+    .cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1.5rem;
@@ -86,7 +71,7 @@
       transform: translateY(-2px);
     }
 
-    .card h2 {
+    .card h3 {
       font-size: 1.25rem;
       font-weight: 900;
       color: #0F05A0;
@@ -108,6 +93,29 @@
       color: #545454;
     }
 
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #0F05A0;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-desc {
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #646464;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-desc a { color: #0F05A0; text-decoration: underline; }
+    .section-desc a:hover { color: #0353DC; }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
     footer {
       text-align: center;
       padding: 2.5rem 1rem;
@@ -125,32 +133,35 @@
 <body>
 
 <header>
-  <h1>MCP-Server Beispiele</h1>
-  <p>Interaktive Auswertungen auf Basis von Open Government Data der Stadt Zürich, erstellt mit Claude und einem MCP-Server</p>
+  <h1>Open Data Stadt Zürich</h1>
+  <p>Interaktive Auswertungen auf Basis von Open Government Data der Stadt Zürich</p>
 </header>
 
 <main>
-  <div class="intro">
-    Diese Webseiten wurden mit Hilfe des
-    <a href="https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html" target="_blank" rel="noopener"><strong>OGD-MCP-Servers</strong></a>
-    und <strong>Claude</strong> erstellt. Die Daten stammen von
-    <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">data.stadt-zuerich.ch</a> (Lizenz: CC0).
-  </div>
-
-  <div id="apps">
-    <a class="card" href="./mcp-personenwagen/">
-      <h2>Personenwagen in der Stadt Zürich</h2>
-      <p>Auswertung der Personenwagen-Daten nach Quartier, Antriebsart und Zeitverlauf.</p>
-    </a>
-    <a class="card" href="./mcp-hunde/">
-      <h2>Hunde in der Stadt Zürich</h2>
-      <p>Übersicht über die registrierten Hunde nach Rasse, Quartier und Geschlecht.</p>
-    </a>
-    <a class="card" href="./mcp-gebaeudebrueter/">
-      <h2>Gebäudebrüter in der Stadt Zürich</h2>
-      <p>Standorte und Entwicklung von Gebäudebrütern wie Mauerseglern und Fledermäusen.</p>
-    </a>
-  </div>
+  <section>
+    <h2 class="section-title">MCP-Server Beispiele</h2>
+    <p class="section-desc">
+      Erstellt mit dem
+      <a href="https://www.stadt-zuerich.ch/de/politik-und-verwaltung/statistik-und-daten/open-government-data/anwendungen/anwendungen-2026/ckan-mcp-server.html" target="_blank" rel="noopener">OGD-MCP-Server</a>
+      und <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>.
+      Die Daten stammen von
+      <a href="https://data.stadt-zuerich.ch" target="_blank" rel="noopener">data.stadt-zuerich.ch</a> (Lizenz: CC0).
+    </p>
+    <div class="cards">
+      <a class="card" href="./mcp-personenwagen/">
+        <h3>Personenwagen in der Stadt Zürich</h3>
+        <p>Auswertung der Personenwagen-Daten nach Quartier, Antriebsart und Zeitverlauf.</p>
+      </a>
+      <a class="card" href="./mcp-hunde/">
+        <h3>Hunde in der Stadt Zürich</h3>
+        <p>Übersicht über die registrierten Hunde nach Rasse, Quartier und Geschlecht.</p>
+      </a>
+      <a class="card" href="./mcp-gebaeudebrueter/">
+        <h3>Gebäudebrüter in der Stadt Zürich</h3>
+        <p>Standorte und Entwicklung von Gebäudebrütern wie Mauerseglern und Fledermäusen.</p>
+      </a>
+    </div>
+  </section>
 </main>
 
 <footer>
